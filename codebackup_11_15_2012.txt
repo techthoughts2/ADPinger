@@ -1,0 +1,452 @@
+Imports System.ComponentModel
+Imports System.Net.Mail
+Imports System.Net.NetworkInformation
+Imports System.Globalization
+Imports System.IO
+Imports System.Text.RegularExpressions
+
+Public Class Form1
+    Public PCNames(5000) As String 'array for storing PC names from OU
+    Dim oThread(1) As System.Threading.Thread 'delay thread needed for stability
+    Public intRange As Integer 'global needed for interacting with the array
+    Public arraySize As Double 'needed for determining last entry in array
+    Public OUSelection As String 'used for user OU selection
+    Public today As Date = Date.Now.ToShortDateString 'used for email and filename
+    Public fmt As DateTimeFormatInfo = (New CultureInfo("hr-HR")).DateTimeFormat 'used for email and filename
+    Public fileDate As String = (today.ToString("d", fmt)) 'used for email and filename
+    Public attachment As String = "" 'needed for attachment
+    Public letsStart As Integer = 0 'used for do loop holding for thread completion
+    Public allDone As Integer = 0 'used for do loop holding for thread completion
+    Public emailAddressEntry As String 'used to send email to user
+    Public cancelCheck As Boolean = False 'used to ensure we can write to the C:\drive
+
+
+    Private Sub Button1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles scanOU.Click
+
+        Dim validated As Boolean = False 'needed for ensuring user makes a selection
+
+        'initial resets on all labels, counters, boxes, etc.
+        Status.Visible = False
+        lblThreads.Text = "0"
+        lstNonPingable.Items.Clear()
+        lstPingable.Items.Clear()
+        Status.Text = "Scanning..."
+        intRange = 0
+        letsStart = 0
+        allDone = 0
+        OUSelection = ""
+        arraySize = 0
+        emailAddressEntry = ""
+        cancelCheck = False
+        'end reset values
+
+        For i = LBound(PCNames) To UBound(PCNames)
+            PCNames(i) = ""
+        Next
+
+        'check to see if the filename already exists, if it does delete it to
+        'avoid duplicates, overwrite issues
+        If Dir("C:\pings") <> "" Then
+            System.IO.File.Delete("C:\pings.csv")
+        End If
+        'this one will be used if the program has already generated a file same day
+        If Dir("C:\OUData_" & fileDate & "csv") <> "" Then
+            System.IO.File.Delete("C:\OUData_" & fileDate & "csv")
+        End If
+
+        'Check to make sure that user made a selection, then assign correct information
+        'of respective OU based on user selection
+        If OUSelector.Text = "" Then
+            MsgBox("You must make a selection")
+        ElseIf OUSelector.Text = "Graveyard OU" Then
+            OUSelection = "LDAP://CGHS-DC1/OU=Computer Graveyard,DC=cghsnt,DC=mccg,DC=org"
+            validated = True
+        ElseIf OUSelector.Text = "Computers OU" Then
+            OUSelection = "LDAP://CGHS-DC1/CN=Computers,DC=cghsnt,DC=mccg,DC=org"
+            validated = True
+        ElseIf OUSelector.Text = "Managed Computers Auto Install OU" Then
+            OUSelection = "LDAP://CGHS-DC1/OU=Managed Computers Auto Install,DC=cghsnt,DC=mccg,DC=org"
+            validated = True
+        ElseIf OUSelector.Text = "Non-Managed Computers OU" Then
+            OUSelection = "LDAP://CGHS-DC1/OU=Non-Managed Computers,DC=cghsnt,DC=mccg,DC=org"
+            validated = True
+        End If
+
+        'once a good selection has been made, initiate the background worker
+        If validated = True Then
+            'also check to ensure valid email address is entered
+            If EmailAddressCheck(emailBox.Text) = True Then
+                Status.Visible = True
+                ADLoader.RunWorkerAsync()
+                emailAddressEntry = emailBox.Text
+            ElseIf EmailAddressCheck(emailBox.Text) = False Then
+                MsgBox("You must input a valid email address")
+            Else
+                MsgBox("You must make a selection")
+            End If
+        End If
+    End Sub
+
+    Function EmailAddressCheck(ByVal emailAddress As String) As Boolean
+        'function used to determine if a valid email address was used
+        Dim pattern As String = "^[a-zA-Z][\w\.-]*[a-zA-Z0-9]@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"
+        Dim emailAddressMatch As Match = Regex.Match(emailAddress, pattern)
+        If emailAddressMatch.Success Then
+            EmailAddressCheck = True
+        Else
+            EmailAddressCheck = False
+        End If
+    End Function
+
+    Private Sub ADLoader_DoWork(ByVal sender As System.Object, ByVal e As System.ComponentModel.DoWorkEventArgs) Handles ADLoader.DoWork
+        'this background worker scans the selected OU, and loads all PC names 
+        'into an array
+
+        'variables used for AD connection
+        Dim objRootDSE, strDomain, objConnection, objCommand, objRecordSet 'path
+        Const ADS_SCOPE_SUBTREE = 2
+        'variable used for array interaction
+        Dim i As Integer = 0
+
+        'Get domain components
+        'this determines what the root LDAP is and looks in the entire AD environment
+        objRootDSE = GetObject("LDAP://RootDSE")
+        strDomain = objRootDSE.Get("DefaultNamingContext")
+
+        'Set ADO connection
+        objConnection = CreateObject("ADODB.Connection")
+        objConnection.Provider = "ADsDSOObject"
+        objConnection.Open("Active Directory Provider")
+
+        'Set ADO command
+        objCommand = CreateObject("ADODB.Command")
+        objCommand.ActiveConnection = objConnection
+        objCommand.Properties("Searchscope") = ADS_SCOPE_SUBTREE
+        objCommand.CommandText = "SELECT name,cn,adsPath FROM '" & OUSelection & " ' WHERE objectCategory='computer' "
+        'objCommand.CommandText = "SELECT accountExpires,mail,displayName FROM 'LDAP://" & strDomain & "' WHERE objectCategory='user' "
+        'AND samAccountName = '" & strUsername & "'"
+        objCommand.Properties("Page Size") = 15000
+
+        'Set recordset to hold the query result
+        objRecordSet = objCommand.Execute
+        objRecordSet.Movefirst()
+
+        Do Until objRecordSet.EOF = True
+            'check to see if the OU entry in null, if it is move to the next record
+            If objRecordSet.Fields("cn").Value Is DBNull.Value Then
+                objRecordSet.MoveNext()
+            Else
+                'load each computername into the array
+                PCNames(i) = objRecordSet.Fields("cn").Value
+                'sometimes for absolutely no reason AD will not correctly populate
+                'the CN into the array and loads a null value. if this happens, it can
+                'be repaired by checking for null and manually loading the name instead
+                'this happens about 1% of the time
+
+                If PCNames(i) = "" Then
+                    PCNames(i) = objRecordSet.Fields("name").Value
+                End If
+                i = i + 1
+                objRecordSet.MoveNext()
+            End If
+        Loop
+
+        'because of the setup of the array Ubound cannot be used to determine last entry
+        'as it is statically set to 5000. this counter loop will determine
+        'the last entry in the array and store that into arraysize
+        arraySize = 0
+        For i = LBound(PCNames) To UBound(PCNames)
+            If PCNames(i) <> "" Then
+                arraySize = arraySize + 1
+            Else
+                Exit For
+            End If
+        Next
+
+        'close connections to AD
+        objRecordSet.Close()
+        objConnection.Close()
+    End Sub
+
+    Private Sub getExpirations_RunWorkerCompleted(ByVal sender As Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles ADLoader.RunWorkerCompleted
+        'begin pinging computers
+        cmdPingComputers()
+    End Sub
+
+    Private Sub cmdPingComputers()
+        'we are going to begin firing off unmanaged threads. this is necessary
+        'to ping all computers simultaneously. running this in serial would result
+        'in a very long drawn out process.  in this code each computers pinging action
+        'is handled by an independent thread.  so, as fast as we can fire threads,
+        'thats how fast PC's start getting pinged.  unfortunately, this happens too fast
+        'with the current code and causes instability.  it becomes necessary to slightly
+        'delay each thread so that the program remains stable.
+
+        'necessary to ensure that we don't fire more threads than pc's in the array
+        'please note that intRange is currently incremented inside each independent thread
+        'this is critical.  incrementing inside this function causes instablity
+        'and faulty data
+        intRange = 0
+        Status.Text = "Processing..."
+        'begin thread creation, NO MORE THAN 1000
+        ReDim oThread(1000)
+        For Q As Integer = 0 To 1000 - 1 Step 1
+            'delay next thread creation. without this, the program does some 
+            'weird things
+            System.Threading.Thread.Sleep(40)
+            'once intRange is the same as arraySize, we stop thread creation
+            'everything is now pinged
+            If intRange >= arraySize Then
+                Exit For
+            End If
+
+            'actual thread creations
+            oThread(Q) = New System.Threading.Thread(AddressOf PingAllPCs)
+            oThread(Q).Name = "Thread" & Q
+            oThread(Q).Start()
+            letsStart = letsStart + 1
+            'refresh thread counter label
+            lblThreads.Text = lblThreads.Text + 1
+            lblThreads.Refresh()
+
+        Next
+
+        'hold program in a do loop until all ping threads report complete
+        'this must be done in a background worker otherwise it locks the program
+        completionChecker.RunWorkerAsync()
+
+    End Sub
+
+    Private Sub completionChecker_DoWork(ByVal sender As System.Object, ByVal e As System.ComponentModel.DoWorkEventArgs) Handles completionChecker.DoWork
+        'here we are going to hold a thread in a loop until all ping threads
+        'report that they are done.
+        'lets check to see if they are all done!
+        Do While allDone < letsStart
+            'MsgBox("inside do loop")
+            If letsStart = allDone Then
+                Exit Do
+            Else
+                System.Threading.Thread.Sleep(4000)
+            End If
+        Loop
+    End Sub
+
+    Private Sub completionChecker_RunWorkerCompleted(ByVal sender As Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles completionChecker.RunWorkerCompleted
+        'start delay backround worker
+        'necessary to ensure we don't process the report creation or send the
+        'email until all threads are complete
+        'note that this will not be called until all threads have been fired for
+        'all PC's inside the OU
+        delay.RunWorkerAsync()
+    End Sub
+
+    Private Sub PingAllPCs()
+        'the basic of it is, this sub will be assigned 10 pc's which it will be
+        'responsible for pinging.  the counters ensure that the sub (with its one thread)
+        'will only ping its respective 10 PC's.
+        'just remember, each instance of PingAllPCs is running on its own unique thread
+        'with 10 PC's per thread
+
+        Dim strBS As String = ""
+        'some sloppy coding here, but...hey, it works.
+        Control.CheckForIllegalCrossThreadCalls = False
+        Dim _ping As New Ping
+
+        'counter variables to ensure this thread only pings the right 10 PC's
+        Dim i As Integer
+        Dim j As Integer
+
+        'again note that intRange is incremented HERE, not in the orignial sub
+        'the below code is kind of a mind fuck as far as counter incrementing.
+        'basically just trust that this is correct (it is, its been tested)
+        'this sets up the for loop to correctly ping the correct 10 PC's in the array.
+        If intRange = 0 Then
+            i = intRange
+            intRange = intRange + 10
+            j = i + 10
+        Else
+            i = intRange + 1
+            intRange = intRange + 10
+            j = i + 9
+        End If
+
+        Dim testLocal As String = ""
+
+        'begin ping process, and ascertain ping status.
+        'names and status are then dumped into a listbox for later use
+        For x = i To j
+            If x < arraySize Then
+                Try
+                    Dim _pingreply = _ping.Send(PCNames(x), 1000) '2000
+                    If _pingreply.Status = IPStatus.Success Then
+                        SyncLock lstPingable
+                            lstPingable.Items.Add(PCNames(x))
+                        End SyncLock
+                        SyncLock lstNonPingable
+                            If InStr(_pingreply.Status, "0") <> Nothing Then
+                                strBS = "Success"
+                            End If
+                            If InStr(_pingreply.Status, "11010") <> Nothing Then
+                                strBS = "Timed Out"
+                            End If
+                            lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        End SyncLock
+                        lstPingable.SelectedIndex = lstPingable.Items.Count - 1
+                    ElseIf _pingreply.Status = IPStatus.TimedOut Then
+                        SyncLock lstNonPingable
+                            If InStr(_pingreply.Status, "0") <> Nothing Then
+                                strBS = "Success"
+                            End If
+                            If InStr(_pingreply.Status, "11010") <> Nothing Then
+                                strBS = "Timed Out"
+                            End If
+                            lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        End SyncLock
+
+                        'ElseIf _pingreply.Status = IPStatus.DestinationHostUnreachable Then
+                        '    SyncLock lstNonPingable
+                        '        If InStr(_pingreply.Status, "0") <> Nothing Then
+                        '            'strBS = "Unknown"
+                        '            'lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        '            strBS = "Success"
+                        '            'strBS = "Dest UNR|Success"
+                        '            lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        '        ElseIf InStr(_pingreply.Status, "11010") <> Nothing Then
+                        '            'strBS = "Unknown"
+                        '            'lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        '            strBS = "Timed Out"
+                        '            lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        '        ElseIf InStr(_pingreply.Status, "11003") <> Nothing Then
+                        '            strBS = "No such host is known"
+                        '            lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        '        End If
+                        '    End SyncLock
+                    Else
+                        SyncLock lstNonPingable
+                            If InStr(_pingreply.Status, "0") <> Nothing Then
+                                strBS = "Success"
+                            End If
+                            If InStr(_pingreply.Status, "11010") <> Nothing Then
+                                strBS = "Timed Out"
+                            End If
+                            If InStr(_pingreply.Status, "11003") <> Nothing Then
+                                strBS = "No such host is known"
+                            End If
+                            lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        End SyncLock
+                    End If
+                Catch ex As System.Net.NetworkInformation.PingException
+                    strBS = ex.InnerException.ToString
+                    strBS = strBS.Remove(0, 48)
+                    strBS = strBS.Remove(22, Int(strBS.Length - 22))
+                    strBS = Trim(strBS)
+                    SyncLock lstNonPingable
+                        lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                    End SyncLock
+                Catch ex As System.Net.Sockets.SocketException
+                    strBS = ex.InnerException.ToString
+                    strBS = strBS.Remove(0, 48)
+                    strBS = strBS.Remove(22, Int(strBS.Length - 22))
+                    strBS = Trim(strBS)
+                    SyncLock lstNonPingable
+                        lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                    End SyncLock
+                Catch ex As System.Exception
+                    strBS = ex.InnerException.ToString
+                    strBS = strBS.Remove(0, 48)
+                    strBS = strBS.Remove(22, Int(strBS.Length - 22))
+                    strBS = Trim(strBS)
+                    SyncLock lstNonPingable
+                        If Not ex.InnerException Is Nothing Then
+                            lstNonPingable.Items.Add(PCNames(x) & "," & strBS)
+                        Else
+                            lstNonPingable.Items.Add(PCNames(x) & "," & InStr((ex.InnerException.ToString), "): "))
+                        End If
+                    End SyncLock
+                End Try
+                
+            Else
+                SyncLock lstNonPingable
+                End SyncLock
+
+                Me.Refresh()
+                allDone = allDone + 1
+                Exit Sub
+            End If
+        Next
+
+        SyncLock lstNonPingable
+        End SyncLock
+
+        Me.Refresh()
+        allDone = allDone + 1
+    End Sub
+
+    Private Sub delay_DoWork(ByVal sender As System.Object, ByVal e As System.ComponentModel.DoWorkEventArgs) Handles delay.DoWork
+        'update user as to current status of the program.  at this point all names
+        'have been loaded, all pc's have been pinged, and listboxes have been populated
+        'however, the program because of the # of threads tends to lag a little
+        'this will pause everything for about 3 seconds to let everything catch up
+        'it will then begin generating the excel report
+        Status.Text = "Generating Report..."
+        System.Threading.Thread.Sleep(1000) 'pause
+
+        'begin report creation.
+        'try to see if we can write to c: if we can't, kill the background worker
+        'and set cancelCheck to true so that the program stops
+        Try
+            Using csv As New System.IO.StreamWriter("C:\OUData_" & fileDate & "csv", True)
+                For Each oitem In lstNonPingable.Items
+                    csv.WriteLine(oitem)
+                Next
+            End Using
+        Catch ex As Exception
+            MsgBox("There was a problem writing the report to C:\")
+            cancelCheck = True
+            delay.CancelAsync()
+        End Try
+        
+        attachment = "C:\OUData_" & fileDate & "csv" 'needed for email call
+        System.Threading.Thread.Sleep(2000) 'pause again to ensure report is complete before emailing
+    End Sub
+    Private Sub delay_RunWorkerCompleted(ByVal sender As Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles delay.RunWorkerCompleted
+        'call email sub
+        'check to see cancelCheck is false, if it is proceed with email program
+        'if not let the user know that there was an error
+        If cancelCheck = False Then
+            emailOut()
+        Else
+            Status.Text = "REPORT ERROR"
+        End If
+    End Sub
+
+    Private Sub emailOut()
+        'required variables for mail message
+        Dim smtp As New System.Net.Mail.SmtpClient
+        Dim addrFrom As New System.Net.Mail.MailAddress("CGHS-Network-Admin@mccg.org")
+        smtp.Host = "Exchng1"
+        smtp.Port = 25
+        smtp.DeliveryMethod = Net.Mail.SmtpDeliveryMethod.Network
+
+        'required variables that initialize the user's mail message
+        Dim msg As New System.Net.Mail.MailMessage
+        msg.From = addrFrom
+        msg.IsBodyHtml = True
+
+        msg.Subject = today & " | AD OU Status Report for: " & OUSelection
+        msg.Bcc.Add(emailAddressEntry)
+        msg.Attachments.Add(New Attachment(attachment))
+        msg.Body = ""
+        Try
+            smtp.Send(msg)
+            msg.Attachments.Dispose()
+
+            Status.Text = "COMPLETED"
+        Catch ex As Exception
+            MsgBox("There was an error sending the report to the email you provided.  Please check the email address and try running the scan again.")
+            Status.Text = "EMAIL ERROR"
+        End Try
+
+    End Sub
+
+End Class

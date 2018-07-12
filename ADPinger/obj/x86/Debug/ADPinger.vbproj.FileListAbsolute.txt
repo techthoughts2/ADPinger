@@ -1,0 +1,70 @@
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.exe
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.pdb
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.xml
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ResolveAssemblyReference.cache
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\GenerateResource.read.1.tlog
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\GenerateResource.write.1.tlog
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.exe
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.xml
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.pdb
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.Form1.resources
+M:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.Resources.resources
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.exe
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.xml
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.pdb
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.exe
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.pdb
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.xml
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.Form1.resources
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.Resources.resources
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.vbproj.GenerateResource.Cache
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.exe
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.xml
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.pdb
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.exe
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.pdb
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.xml
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.Resources.resources
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.vbproj.GenerateResource.Cache
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\obj\x86\Debug\ADPinger.exe
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\obj\x86\Debug\ADPinger.xml
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\obj\x86\Debug\ADPinger.pdb
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\bin\Debug\ADPinger.exe
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\bin\Debug\ADPinger.pdb
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\bin\Debug\ADPinger.xml
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\obj\x86\Debug\ADPinger.frmMain.resources
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\obj\x86\Debug\ADPinger.Resources.resources
+J:\Projects\ADExternal\Pinger\ADPinger - Copy\ADPinger\obj\x86\Debug\ADPinger.vbproj.GenerateResource.Cache
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.aboutBox.resources
+J:\Projects\ADExternal\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.frmMain.resources
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\obj\x86\Debug\ADPinger.exe
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\obj\x86\Debug\ADPinger.xml
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\obj\x86\Debug\ADPinger.pdb
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\bin\Debug\ADPinger.exe
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\bin\Debug\ADPinger.pdb
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\bin\Debug\ADPinger.xml
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\obj\x86\Debug\ADPinger.aboutBox.resources
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\obj\x86\Debug\ADPinger.frmMain.resources
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\obj\x86\Debug\ADPinger.Resources.resources
+J:\Projects\ADExternal\Pinger\ADPinger-copy\ADPinger\obj\x86\Debug\ADPinger.vbproj.GenerateResource.Cache
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\obj\x86\Debug\ADPinger.exe
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\obj\x86\Debug\ADPinger.xml
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\obj\x86\Debug\ADPinger.pdb
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\bin\Debug\ADPinger.exe
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\bin\Debug\ADPinger.pdb
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\bin\Debug\ADPinger.xml
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\obj\x86\Debug\ADPinger.aboutBox.resources
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\obj\x86\Debug\ADPinger.Form1.resources
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\obj\x86\Debug\ADPinger.Resources.resources
+J:\Projects\ADExternal\Pinger\ADPinger-copy- bad\ADPinger\obj\x86\Debug\ADPinger.vbproj.GenerateResource.Cache
+J:\Projects\AD_Project\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.aboutBox.resources
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.exe
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.xml
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.pdb
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.exe
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.pdb
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\bin\Debug\ADPinger.xml
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.aboutBox.resources
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.Form1.resources
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.Resources.resources
+Z:\Code_Projects\Pinger\ADPinger\ADPinger\obj\x86\Debug\ADPinger.vbproj.GenerateResource.Cache
